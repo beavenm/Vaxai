@@ -13,25 +13,25 @@ export function generatePDF(design: VaccineDesign) {
   doc.text('Design Information', 20, 50);
   doc.setFontSize(12);
   doc.text(`Name: ${design.name}`, 20, 65);
-  doc.text(`Created: ${new Date(design.createdAt).toLocaleDateString()}`, 20, 75);
-  doc.text(`Target Population: ${design.targetPopulation}`, 20, 85);
-  doc.text(`Vaccine Type: ${design.vaccineType}`, 20, 95);
+  doc.text(`Created: ${design.createdAt ? new Date(design.createdAt).toLocaleDateString() : 'N/A'}`, 20, 75);
+  doc.text(`Target Population: ${design.targetPopulation || 'Global Population'}`, 20, 85);
+  doc.text(`Vaccine Type: ${design.vaccineType || 'Multi-epitope'}`, 20, 95);
   
   // Summary Scores
   doc.setFontSize(16);
   doc.text('Summary Scores', 20, 115);
   doc.setFontSize(12);
-  doc.text(`Antigenicity Score: ${(design.antigenicityScore * 100).toFixed(1)}%`, 20, 130);
-  doc.text(`Population Coverage: ${(design.populationCoverage * 100).toFixed(1)}%`, 20, 140);
-  doc.text(`Safety Score: ${(design.safetyScore * 100).toFixed(1)}%`, 20, 150);
-  doc.text(`Number of Epitopes: ${design.epitopeCount}`, 20, 160);
+  doc.text(`Antigenicity Score: ${design.antigenicityScore ? (design.antigenicityScore * 100).toFixed(1) + '%' : 'N/A'}`, 20, 130);
+  doc.text(`Population Coverage: ${design.populationCoverage ? (design.populationCoverage * 100).toFixed(1) + '%' : 'N/A'}`, 20, 140);
+  doc.text(`Safety Score: ${design.safetyScore ? (design.safetyScore * 100).toFixed(1) + '%' : 'N/A'}`, 20, 150);
+  doc.text(`Number of Epitopes: ${design.epitopeCount || 'N/A'}`, 20, 160);
   
   // Sequence Properties
   doc.setFontSize(16);
   doc.text('Sequence Properties', 20, 180);
   doc.setFontSize(12);
-  doc.text(`Length: ${design.sequenceLength} amino acids`, 20, 195);
-  doc.text(`Molecular Weight: ${design.molecularWeight} kDa`, 20, 205);
+  doc.text(`Length: ${design.sequenceLength || 'N/A'} amino acids`, 20, 195);
+  doc.text(`Molecular Weight: ${design.molecularWeight || 'N/A'} kDa`, 20, 205);
   
   // Add new page for sequence
   doc.addPage();
@@ -61,7 +61,7 @@ export function generatePDF(design: VaccineDesign) {
   }
   
   // Epitope Table
-  if (design.epitopes && design.epitopes.length > 0) {
+  if (design.epitopes && Array.isArray(design.epitopes) && design.epitopes.length > 0) {
     doc.addPage();
     doc.setFontSize(16);
     doc.text('Selected Epitopes', 20, 30);

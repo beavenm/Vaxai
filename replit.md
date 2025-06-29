@@ -17,7 +17,8 @@ VaxPredict Pro is a sophisticated bioinformatics web application that leverages 
 ### Backend Architecture
 - **Runtime**: Node.js with Express.js framework
 - **Database**: PostgreSQL with Drizzle ORM for type-safe database operations
-- **Database Provider**: Neon serverless PostgreSQL
+- **Database Provider**: Neon serverless PostgreSQL (fully configured and operational)
+- **Storage**: DatabaseStorage class implementing persistent data storage
 - **File Processing**: Multer for handling file uploads (FASTA, GenBank formats)
 - **Session Management**: PostgreSQL-based session storage with connect-pg-simple
 
@@ -85,13 +86,14 @@ VaxPredict Pro is a sophisticated bioinformatics web application that leverages 
 - **Environment**: Configurable via DATABASE_URL environment variable
 
 ### Scalability Considerations
-- **Storage**: Currently uses in-memory storage, designed for database persistence
+- **Storage**: Uses PostgreSQL database with Drizzle ORM for reliable data persistence
 - **Processing**: Async processing pipeline ready for queue system integration
 - **Caching**: TanStack Query provides client-side caching for API responses
 
 ## Changelog
 
 - June 29, 2025. Initial setup
+- June 29, 2025. Database integration completed - PostgreSQL database fully configured with Drizzle ORM, replaced in-memory storage with persistent DatabaseStorage implementation
 
 ## User Preferences
 
