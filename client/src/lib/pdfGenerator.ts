@@ -92,13 +92,14 @@ export function generatePDF(design: VaccineDesign) {
   }
   
   // Safety Assessment
+  let yPos = 50;
   if (design.safetyAssessment) {
     doc.addPage();
     doc.setFontSize(16);
     doc.text('Safety Assessment', 20, 30);
     
     doc.setFontSize(12);
-    let yPos = 50;
+    yPos = 50;
     
     for (const [key, value] of Object.entries(design.safetyAssessment)) {
       doc.text(`${key.charAt(0).toUpperCase() + key.slice(1)}: ${value}`, 20, yPos);
@@ -108,6 +109,10 @@ export function generatePDF(design: VaccineDesign) {
   
   // Population Breakdown
   if (design.populationBreakdown) {
+    if (!design.safetyAssessment) {
+      doc.addPage();
+      yPos = 30;
+    }
     doc.setFontSize(16);
     doc.text('Population Coverage Breakdown', 20, yPos + 20);
     
