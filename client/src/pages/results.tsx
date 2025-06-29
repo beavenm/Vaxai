@@ -4,6 +4,8 @@ import { TrendingUp, Shield, Users, Dna, CheckCircle, Copy, Download, Plus } fro
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import ResultsDisplay from "@/components/ResultsDisplay";
+import ProjectSharing from "@/components/ProjectSharing";
+import CommentsSection from "@/components/CommentsSection";
 
 export default function ResultsPage() {
   const [location, setLocation] = useLocation();
@@ -79,6 +81,12 @@ export default function ResultsPage() {
         </div>
 
         <ResultsDisplay design={design} onNewAnalysis={startNewAnalysis} />
+
+        {/* Collaboration Section */}
+        <div className="grid lg:grid-cols-2 gap-8 mt-8">
+          <ProjectSharing design={design} userId={1} />
+          <CommentsSection designId={design.id} userId={1} />
+        </div>
 
       </div>
     </section>

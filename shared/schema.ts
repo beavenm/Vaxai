@@ -6,6 +6,56 @@ export const users = pgTable("users", {
   id: serial("id").primaryKey(),
   username: text("username").notNull().unique(),
   password: text("password").notNull(),
+  email: text("email"),
+  fullName: text("full_name"),
+  role: text("role").default("researcher"), // 'admin', 'researcher', 'viewer'
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const teams = pgTable("teams", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  description: text("description"),
+  createdBy: integer("created_by").references(() => users.id),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const teamMembers = pgTable("team_members", {
+  id: serial("id").primaryKey(),
+  teamId: integer("team_id").references(() => teams.id).notNull(),
+  userId: integer("user_id").references(() => users.id).notNull(),
+  role: text("role").notNull().default("member"), // 'owner', 'admin', 'member', 'viewer'
+  joinedAt: timestamp("joined_at").defaultNow(),
+});
+
+export const projectShares = pgTable("project_shares", {
+  id: serial("id").primaryKey(),
+  designId: integer("design_id").references(() => vaccineDesigns.id).notNull(),
+  teamId: integer("team_id").references(() => teams.id),
+  sharedWithUserId: integer("shared_with_user_id").references(() => users.id),
+  permission: text("permission").notNull().default("view"), // 'view', 'edit', 'admin'
+  sharedBy: integer("shared_by").references(() => users.id).notNull(),
+  sharedAt: timestamp("shared_at").defaultNow(),
+});
+
+export const comments = pgTable("comments", {
+  id: serial("id").primaryKey(),
+  designId: integer("design_id").references(() => vaccineDesigns.id).notNull(),
+  userId: integer("user_id").references(() => users.id).notNull(),
+  content: text("content").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const designVersions = pgTable("design_versions", {
+  id: serial("id").primaryKey(),
+  designId: integer("design_id").references(() => vaccineDesigns.id).notNull(),
+  version: integer("version").notNull(),
+  changes: jsonb("changes").notNull(),
+  createdBy: integer("created_by").references(() => users.id).notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+  description: text("description"),
 });
 
 export const vaccineDesigns = pgTable("vaccine_designs", {
@@ -38,9 +88,89 @@ export const vaccineDesigns = pgTable("vaccine_designs", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+// Relations
+export const usersRelations = {
+  teams: {
+    many: true,
+    table: teamMembers,
+    foreignKey: 'userId',
+  },
+  createdTeams: {
+    many: true,
+    table: teams,
+    foreignKey: 'createdBy',
+  },
+  comments: {
+    many: true,
+    table: comments,
+    foreignKey: 'userId',
+  },
+};
+
+export const teamsRelations = {
+  members: {
+    many: true,
+    table: teamMembers,
+    foreignKey: 'teamId',
+  },
+  creator: {
+    one: true,
+    table: users,
+    foreignKey: 'createdBy',
+  },
+};
+
+export const vaccineDesignsRelations = {
+  comments: {
+    many: true,
+    table: comments,
+    foreignKey: 'designId',
+  },
+  shares: {
+    many: true,
+    table: projectShares,
+    foreignKey: 'designId',
+  },
+  versions: {
+    many: true,
+    table: designVersions,
+    foreignKey: 'designId',
+  },
+};
+
+// Insert schemas
 export const insertUserSchema = createInsertSchema(users).pick({
   username: true,
   password: true,
+  email: true,
+  fullName: true,
+});
+
+export const insertTeamSchema = createInsertSchema(teams).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertTeamMemberSchema = createInsertSchema(teamMembers).omit({
+  id: true,
+  joinedAt: true,
+});
+
+export const insertProjectShareSchema = createInsertSchema(projectShares).omit({
+  id: true,
+  sharedAt: true,
+});
+
+export const insertCommentSchema = createInsertSchema(comments).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertDesignVersionSchema = createInsertSchema(designVersions).omit({
+  id: true,
+  createdAt: true,
 });
 
 export const insertVaccineDesignSchema = createInsertSchema(vaccineDesigns).omit({
@@ -52,7 +182,18 @@ export const insertVaccineDesignSchema = createInsertSchema(vaccineDesigns).omit
   name: z.string().min(1, "Name is required"),
 });
 
+// Types
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
+export type Team = typeof teams.$inferSelect;
+export type TeamMember = typeof teamMembers.$inferSelect;
+export type ProjectShare = typeof projectShares.$inferSelect;
+export type Comment = typeof comments.$inferSelect;
+export type DesignVersion = typeof designVersions.$inferSelect;
 export type VaccineDesign = typeof vaccineDesigns.$inferSelect;
+export type InsertTeam = z.infer<typeof insertTeamSchema>;
+export type InsertTeamMember = z.infer<typeof insertTeamMemberSchema>;
+export type InsertProjectShare = z.infer<typeof insertProjectShareSchema>;
+export type InsertComment = z.infer<typeof insertCommentSchema>;
+export type InsertDesignVersion = z.infer<typeof insertDesignVersionSchema>;
 export type InsertVaccineDesign = z.infer<typeof insertVaccineDesignSchema>;

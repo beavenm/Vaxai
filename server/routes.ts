@@ -1,7 +1,10 @@
 import type { Express, Request } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertVaccineDesignSchema } from "@shared/schema";
+import { 
+  insertVaccineDesignSchema, insertTeamSchema, insertTeamMemberSchema, 
+  insertProjectShareSchema, insertCommentSchema, insertDesignVersionSchema 
+} from "@shared/schema";
 import multer from "multer";
 import { z } from "zod";
 
@@ -63,6 +66,200 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const designs = await storage.getUserVaccineDesigns();
       res.json(designs);
+    } catch (error) {
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  // Team Management Routes
+  app.post("/api/teams", async (req, res) => {
+    try {
+      const validatedData = insertTeamSchema.parse(req.body);
+      const team = await storage.createTeam(validatedData);
+      
+      // Add creator as owner
+      await storage.addTeamMember({
+        teamId: team.id,
+        userId: team.createdBy!,
+        role: "owner"
+      });
+      
+      res.json(team);
+    } catch (error) {
+      res.status(400).json({ 
+        message: error instanceof z.ZodError ? error.errors : "Invalid input data" 
+      });
+    }
+  });
+
+  app.get("/api/teams/user/:userId", async (req, res) => {
+    try {
+      const userId = parseInt(req.params.userId);
+      const teams = await storage.getUserTeams(userId);
+      res.json(teams);
+    } catch (error) {
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  app.get("/api/teams/:id/members", async (req, res) => {
+    try {
+      const teamId = parseInt(req.params.id);
+      const members = await storage.getTeamMembers(teamId);
+      res.json(members);
+    } catch (error) {
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  app.post("/api/teams/:id/members", async (req, res) => {
+    try {
+      const teamId = parseInt(req.params.id);
+      const validatedData = insertTeamMemberSchema.parse({
+        ...req.body,
+        teamId
+      });
+      const member = await storage.addTeamMember(validatedData);
+      res.json(member);
+    } catch (error) {
+      res.status(400).json({ 
+        message: error instanceof z.ZodError ? error.errors : "Invalid input data" 
+      });
+    }
+  });
+
+  app.delete("/api/teams/:teamId/members/:userId", async (req, res) => {
+    try {
+      const teamId = parseInt(req.params.teamId);
+      const userId = parseInt(req.params.userId);
+      const success = await storage.removeTeamMember(teamId, userId);
+      
+      if (success) {
+        res.json({ message: "Member removed successfully" });
+      } else {
+        res.status(404).json({ message: "Member not found" });
+      }
+    } catch (error) {
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  // Project Sharing Routes
+  app.post("/api/designs/:id/share", async (req, res) => {
+    try {
+      const designId = parseInt(req.params.id);
+      const validatedData = insertProjectShareSchema.parse({
+        ...req.body,
+        designId
+      });
+      const share = await storage.shareDesign(validatedData);
+      res.json(share);
+    } catch (error) {
+      res.status(400).json({ 
+        message: error instanceof z.ZodError ? error.errors : "Invalid input data" 
+      });
+    }
+  });
+
+  app.get("/api/designs/:id/shares", async (req, res) => {
+    try {
+      const designId = parseInt(req.params.id);
+      const shares = await storage.getDesignShares(designId);
+      res.json(shares);
+    } catch (error) {
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  app.delete("/api/shares/:id", async (req, res) => {
+    try {
+      const shareId = parseInt(req.params.id);
+      const success = await storage.removeShare(shareId);
+      
+      if (success) {
+        res.json({ message: "Share removed successfully" });
+      } else {
+        res.status(404).json({ message: "Share not found" });
+      }
+    } catch (error) {
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  app.get("/api/users/:userId/shared-designs", async (req, res) => {
+    try {
+      const userId = parseInt(req.params.userId);
+      const designs = await storage.getSharedDesigns(userId);
+      res.json(designs);
+    } catch (error) {
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  // Comments Routes
+  app.post("/api/designs/:id/comments", async (req, res) => {
+    try {
+      const designId = parseInt(req.params.id);
+      const validatedData = insertCommentSchema.parse({
+        ...req.body,
+        designId
+      });
+      const comment = await storage.addComment(validatedData);
+      res.json(comment);
+    } catch (error) {
+      res.status(400).json({ 
+        message: error instanceof z.ZodError ? error.errors : "Invalid input data" 
+      });
+    }
+  });
+
+  app.get("/api/designs/:id/comments", async (req, res) => {
+    try {
+      const designId = parseInt(req.params.id);
+      const comments = await storage.getDesignComments(designId);
+      res.json(comments);
+    } catch (error) {
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  app.delete("/api/comments/:id", async (req, res) => {
+    try {
+      const commentId = parseInt(req.params.id);
+      const success = await storage.deleteComment(commentId);
+      
+      if (success) {
+        res.json({ message: "Comment deleted successfully" });
+      } else {
+        res.status(404).json({ message: "Comment not found" });
+      }
+    } catch (error) {
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  // Design Versions Routes
+  app.post("/api/designs/:id/versions", async (req, res) => {
+    try {
+      const designId = parseInt(req.params.id);
+      const validatedData = insertDesignVersionSchema.parse({
+        ...req.body,
+        designId
+      });
+      const version = await storage.createDesignVersion(validatedData);
+      res.json(version);
+    } catch (error) {
+      res.status(400).json({ 
+        message: error instanceof z.ZodError ? error.errors : "Invalid input data" 
+      });
+    }
+  });
+
+  app.get("/api/designs/:id/versions", async (req, res) => {
+    try {
+      const designId = parseInt(req.params.id);
+      const versions = await storage.getDesignVersions(designId);
+      res.json(versions);
     } catch (error) {
       res.status(500).json({ message: "Internal server error" });
     }

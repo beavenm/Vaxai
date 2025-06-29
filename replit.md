@@ -36,6 +36,11 @@ VaxPredict Pro is a sophisticated bioinformatics web application that leverages 
   - Processing status and progress tracking
   - Results storage (optimized sequences, scores, epitope data)
   - JSON storage for complex analysis results
+- **Collaboration System**: Full team-based research collaboration with:
+  - Team management with role-based permissions (owner, admin, member, viewer)
+  - Project sharing with granular access controls (view, edit, admin)
+  - Real-time discussion system with threaded comments
+  - Version tracking and design history management
 
 ### Processing Pipeline
 1. **Sequence Analysis**: Validates and processes input sequences
@@ -94,6 +99,7 @@ VaxPredict Pro is a sophisticated bioinformatics web application that leverages 
 
 - June 29, 2025. Initial setup
 - June 29, 2025. Database integration completed - PostgreSQL database fully configured with Drizzle ORM, replaced in-memory storage with persistent DatabaseStorage implementation
+- June 29, 2025. Collaborative features added - Implemented comprehensive team management, project sharing, and discussion features for research collaboration
 
 ## User Preferences
 

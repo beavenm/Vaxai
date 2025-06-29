@@ -8,6 +8,7 @@ export default function FloatingNav() {
     if (location === "/") return "input";
     if (location.includes("/processing")) return "processing";
     if (location.includes("/results")) return "results";
+    if (location.includes("/collaboration")) return "collaboration";
     return "input";
   };
   
@@ -46,6 +47,15 @@ export default function FloatingNav() {
           }`}>
             Results
           </button>
+          <Link href="/collaboration">
+            <button className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+              activeSection === "collaboration"
+                ? "text-blue-500 bg-blue-500/10"
+                : "text-gray-600 hover:text-blue-500"
+            }`}>
+              Teams
+            </button>
+          </Link>
         </div>
       </div>
     </nav>

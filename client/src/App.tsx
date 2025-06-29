@@ -7,6 +7,7 @@ import NotFound from "@/pages/not-found";
 import InputPage from "@/pages/input";
 import ProcessingPage from "@/pages/processing";
 import ResultsPage from "@/pages/results";
+import CollaborationPage from "@/pages/collaboration";
 import FloatingNav from "@/components/FloatingNav";
 
 function Router() {
@@ -18,6 +19,7 @@ function Router() {
           <Route path="/" component={InputPage} />
           <Route path="/processing/:id" component={ProcessingPage} />
           <Route path="/results/:id" component={ResultsPage} />
+          <Route path="/collaboration" component={CollaborationPage} />
           <Route component={NotFound} />
         </Switch>
       </div>
