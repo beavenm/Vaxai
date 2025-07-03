@@ -28,6 +28,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       let inputData = req.body;
       
+      console.log('Received form data:', inputData);
+      
       // Handle file upload
       if (req.file) {
         const fileContent = req.file.buffer.toString('utf-8');
@@ -35,6 +37,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         inputData.name = inputData.name || req.file.originalname;
       }
       
+      console.log('Data before validation:', inputData);
       const validatedData = insertVaccineDesignSchema.parse(inputData);
       const design = await storage.createVaccineDesign(validatedData);
       
@@ -43,8 +46,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       res.json(design);
     } catch (error) {
+      console.error('Vaccine design creation error:', error);
       res.status(400).json({ 
-        message: error instanceof z.ZodError ? error.errors : "Invalid input data" 
+        message: error instanceof z.ZodError ? error.errors : "Invalid input data",
+        details: error instanceof z.ZodError ? error.errors : error.message
       });
     }
   });
